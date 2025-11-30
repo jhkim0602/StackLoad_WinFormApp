@@ -55,6 +55,7 @@ namespace WindowsFormsApp2.Forms
             this.lblName = new System.Windows.Forms.Label();
             this.txtId = new System.Windows.Forms.TextBox();
             this.lblId = new System.Windows.Forms.Label();
+            this.btnSyncApi = new System.Windows.Forms.Button();
             this.leftPanel.SuspendLayout();
             this.grpSearch.SuspendLayout();
             this.grpUserStats.SuspendLayout();
@@ -64,8 +65,6 @@ namespace WindowsFormsApp2.Forms
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.grpUserList.SuspendLayout();
-            this.grpUserList.SuspendLayout();
-            this.grpUserDetail.SuspendLayout();
             this.grpUserDetail.SuspendLayout();
             this.SuspendLayout();
             //
@@ -82,8 +81,10 @@ namespace WindowsFormsApp2.Forms
             //
             // grpSearch
             //
-            this.grpSearch.Controls.Add(this.btnReset);
             this.grpSearch.Controls.Add(this.btnSearch);
+            this.grpSearch.Controls.Add(this.btnReset);
+            this.grpSearch.Controls.Add(this.btnLoadApi);
+            this.grpSearch.Controls.Add(this.btnBackup);
             this.grpSearch.Controls.Add(this.txtSearch);
             this.grpSearch.Controls.Add(this.lblSearchLabel);
             this.grpSearch.Location = new System.Drawing.Point(8, 8);
@@ -129,6 +130,26 @@ namespace WindowsFormsApp2.Forms
             this.btnReset.Text = "초기화";
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            //
+            // btnLoadApi
+            //
+            this.btnLoadApi.Location = new System.Drawing.Point(12, 140);
+            this.btnLoadApi.Name = "btnLoadApi";
+            this.btnLoadApi.Size = new System.Drawing.Size(135, 40);
+            this.btnLoadApi.TabIndex = 6;
+            this.btnLoadApi.Text = "API 조회 (새로고침)";
+            this.btnLoadApi.UseVisualStyleBackColor = true;
+            this.btnLoadApi.Click += new System.EventHandler(this.btnLoadApi_Click);
+            //
+            // btnBackup
+            //
+            this.btnBackup.Location = new System.Drawing.Point(153, 140);
+            this.btnBackup.Name = "btnBackup";
+            this.btnBackup.Size = new System.Drawing.Size(135, 40);
+            this.btnBackup.TabIndex = 7;
+            this.btnBackup.Text = "로컬 백업";
+            this.btnBackup.UseVisualStyleBackColor = true;
+            this.btnBackup.Click += new System.EventHandler(this.btnBackup_Click);
             //
             // grpUserStats
             //
@@ -275,9 +296,9 @@ namespace WindowsFormsApp2.Forms
             this.lblUserListCount.Size = new System.Drawing.Size(100, 12);
             this.lblUserListCount.TabIndex = 1;
             this.lblUserListCount.Text = "유저 목록";
-            // 
+            //
             // userListView
-            // 
+            //
             this.userListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderId,
             this.columnHeaderName,
@@ -297,34 +318,34 @@ namespace WindowsFormsApp2.Forms
             this.userListView.UseCompatibleStateImageBehavior = false;
             this.userListView.View = System.Windows.Forms.View.Details;
             this.userListView.SelectedIndexChanged += new System.EventHandler(this.userListView_SelectedIndexChanged);
-            // 
+            //
             // columnHeaderId
-            // 
+            //
             this.columnHeaderId.Text = "ID";
             this.columnHeaderId.Width = 60;
-            // 
+            //
             // columnHeaderName
-            // 
+            //
             this.columnHeaderName.Text = "이름";
             this.columnHeaderName.Width = 100;
-            // 
+            //
             // columnHeaderEmail
-            // 
+            //
             this.columnHeaderEmail.Text = "이메일";
             this.columnHeaderEmail.Width = 150;
-            // 
+            //
             // columnHeaderRole
-            // 
+            //
             this.columnHeaderRole.Text = "역할";
             this.columnHeaderRole.Width = 80;
-            // 
+            //
             // columnHeaderJoinDate
-            // 
+            //
             this.columnHeaderJoinDate.Text = "가입일";
             this.columnHeaderJoinDate.Width = 100;
-            // 
+            //
             // columnHeaderPosts
-            // 
+            //
             this.columnHeaderPosts.Text = "게시글";
             this.columnHeaderPosts.Width = 60;
             //
@@ -486,6 +507,8 @@ namespace WindowsFormsApp2.Forms
         private System.Windows.Forms.TextBox txtSearch;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnLoadApi;
+        private System.Windows.Forms.Button btnBackup;
         private System.Windows.Forms.GroupBox grpUserStats;
         private System.Windows.Forms.Label lblTotalUsersLabel;
         private System.Windows.Forms.Label lblTotalUsers;

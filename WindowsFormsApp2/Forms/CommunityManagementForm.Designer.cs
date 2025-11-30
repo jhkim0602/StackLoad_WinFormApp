@@ -65,8 +65,6 @@ namespace WindowsFormsApp2.Forms
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.grpPostList.SuspendLayout();
-            this.grpPostList.SuspendLayout();
-            this.grpPostDetail.SuspendLayout();
             this.grpPostDetail.SuspendLayout();
             this.SuspendLayout();
             //
@@ -83,6 +81,8 @@ namespace WindowsFormsApp2.Forms
             //
             // grpFilter
             //
+            this.grpFilter.Controls.Add(this.btnLoadApi);
+            this.grpFilter.Controls.Add(this.btnBackup);
             this.grpFilter.Controls.Add(this.btnReset);
             this.grpFilter.Controls.Add(this.btnSearch);
             this.grpFilter.Controls.Add(this.txtSearchTitle);
@@ -157,6 +157,26 @@ namespace WindowsFormsApp2.Forms
             this.btnReset.Text = "초기화";
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            //
+            // btnLoadApi
+            //
+            this.btnLoadApi.Location = new System.Drawing.Point(12, 140);
+            this.btnLoadApi.Name = "btnLoadApi";
+            this.btnLoadApi.Size = new System.Drawing.Size(135, 40);
+            this.btnLoadApi.TabIndex = 6;
+            this.btnLoadApi.Text = "API 조회 (새로고침)";
+            this.btnLoadApi.UseVisualStyleBackColor = true;
+            this.btnLoadApi.Click += new System.EventHandler(this.btnLoadApi_Click);
+            //
+            // btnBackup
+            //
+            this.btnBackup.Location = new System.Drawing.Point(153, 140);
+            this.btnBackup.Name = "btnBackup";
+            this.btnBackup.Size = new System.Drawing.Size(135, 40);
+            this.btnBackup.TabIndex = 7;
+            this.btnBackup.Text = "로컬 백업";
+            this.btnBackup.UseVisualStyleBackColor = true;
+            this.btnBackup.Click += new System.EventHandler(this.btnBackup_Click);
             //
             // grpCommunityStats
             //
@@ -281,9 +301,9 @@ namespace WindowsFormsApp2.Forms
             this.lblPostListCount.Size = new System.Drawing.Size(100, 12);
             this.lblPostListCount.TabIndex = 1;
             this.lblPostListCount.Text = "게시글 목록";
-            // 
+            //
             // communityListView
-            // 
+            //
             this.communityListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderPostId,
             this.columnHeaderPostTitle,
@@ -304,39 +324,39 @@ namespace WindowsFormsApp2.Forms
             this.communityListView.UseCompatibleStateImageBehavior = false;
             this.communityListView.View = System.Windows.Forms.View.Details;
             this.communityListView.SelectedIndexChanged += new System.EventHandler(this.communityListView_SelectedIndexChanged);
-            // 
+            //
             // columnHeaderPostId
-            // 
+            //
             this.columnHeaderPostId.Text = "ID";
             this.columnHeaderPostId.Width = 60;
-            // 
+            //
             // columnHeaderPostTitle
-            // 
+            //
             this.columnHeaderPostTitle.Text = "제목";
             this.columnHeaderPostTitle.Width = 300;
-            // 
+            //
             // columnHeaderPostAuthor
-            // 
+            //
             this.columnHeaderPostAuthor.Text = "작성자";
             this.columnHeaderPostAuthor.Width = 100;
-            // 
+            //
             // columnHeaderPostCategory
-            // 
+            //
             this.columnHeaderPostCategory.Text = "카테고리";
             this.columnHeaderPostCategory.Width = 100;
-            // 
+            //
             // columnHeaderPostDate
-            // 
+            //
             this.columnHeaderPostDate.Text = "날짜";
             this.columnHeaderPostDate.Width = 100;
-            // 
+            //
             // columnHeaderPostViews
-            // 
+            //
             this.columnHeaderPostViews.Text = "조회";
             this.columnHeaderPostViews.Width = 70;
-            // 
+            //
             // columnHeaderPostComments
-            // 
+            //
             this.columnHeaderPostComments.Text = "댓글";
             this.columnHeaderPostComments.Width = 70;
             //
@@ -506,6 +526,8 @@ namespace WindowsFormsApp2.Forms
         private System.Windows.Forms.TextBox txtSearchTitle;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnLoadApi;
+        private System.Windows.Forms.Button btnBackup;
         private System.Windows.Forms.GroupBox grpCommunityStats;
         private System.Windows.Forms.Label lblTotalPostsLabel;
         private System.Windows.Forms.Label lblTotalPosts;

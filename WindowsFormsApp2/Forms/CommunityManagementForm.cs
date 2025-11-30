@@ -7,6 +7,9 @@ using WindowsFormsApp2.Models;
 using Oracle.DataAccess.Client;
 using System.Configuration;
 
+using WindowsFormsApp2.Services;
+using WindowsFormsApp2.Repositories;
+
 namespace WindowsFormsApp2.Forms
 {
     /// <summary>
@@ -101,13 +104,13 @@ namespace WindowsFormsApp2.Forms
             if (db.ResultTable == null) return;
 
             lblTotalPosts.Text = db.ResultTable.Rows.Count.ToString();
-            
+
             object sumViews = db.ResultTable.Compute("Sum(views_count)", "");
             lblTotalViews.Text = (sumViews != DBNull.Value) ? sumViews.ToString() : "0";
 
             object sumComments = db.ResultTable.Compute("Sum(comments_count)", "");
             lblTotalComments.Text = (sumComments != DBNull.Value) ? sumComments.ToString() : "0";
-            
+
             lblPostListCount.Text = $"게시글 목록          총 {db.ResultTable.Rows.Count}건";
         }
 
@@ -127,13 +130,13 @@ namespace WindowsFormsApp2.Forms
                     txtId.Text = item.SubItems[0].Text;
                     txtTitle.Text = item.SubItems[1].Text;
                     txtAuthor.Text = item.SubItems[2].Text;
-                    
+
                     string category = item.SubItems[3].Text;
                     if (cmbCategory.Items.Contains(category))
                         cmbCategory.SelectedItem = category;
                     else
                         cmbCategory.Text = category;
-                        
+
                     db.SelectedKeyValue = Convert.ToInt32(item.SubItems[0].Text);
                     SelectedPostId = db.SelectedKeyValue;
                 }
@@ -182,9 +185,9 @@ namespace WindowsFormsApp2.Forms
         }
 
         /// <summary>
-        /// 수정 버튼 클릭
+        /// 수정 버튼 클릭 (API 연동)
         /// </summary>
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private async void btnUpdate_Click(object sender, EventArgs e)
         {
             try
             {
@@ -193,6 +196,21 @@ namespace WindowsFormsApp2.Forms
                     MessageBox.Show("수정할 게시글을 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
                 }
+
+                // API 호출
+                var model = new PostApiModel
+                {
+                    Id = int.Parse(txtId.Text),
+                    Title = txtTitle.Text,
+                    AuthorId = txtAuthor.Text, // Author Name or ID? DB has author_id.
+                    PostType = cmbCategory.SelectedItem?.ToString() ?? "",
+                    CreatedAt = DateTime.Now,
+                    ViewsCount = 0,
+                    CommentsCount = 0
+                };
+
+                ApiService apiService = new ApiService();
+                await apiService.UpdateAsync($"/rest/v1/posts?id=eq.{model.Id}", model);
 
                 DataRow currRow = db.ResultTable.Rows.Find(SelectedPostId);
                 if (currRow != null)
@@ -207,24 +225,20 @@ namespace WindowsFormsApp2.Forms
                     db.DS.AcceptChanges();
 
                     UpdateCommunityStats();
-                    LoadPostData(); // DB Reload and Refresh ListView
+                    LoadPostData();
                     MessageBox.Show("게시글 정보가 수정되었습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-            catch (DataException DE)
+            catch (Exception ex)
             {
-                MessageBox.Show(DE.Message);
-            }
-            catch (Exception DE)
-            {
-                MessageBox.Show(DE.Message);
+                MessageBox.Show($"수정 실패: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 삭제 버튼 클릭
+        /// 삭제 버튼 클릭 (API 연동)
         /// </summary>
-        private void btnDelete_Click(object sender, EventArgs e)
+        private async void btnDelete_Click(object sender, EventArgs e)
         {
             try
             {
@@ -237,29 +251,105 @@ namespace WindowsFormsApp2.Forms
                 DialogResult result = MessageBox.Show("선택한 게시글을 삭제하시겠습니까?", "확인", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
+                    // API 호출
+                    ApiService apiService = new ApiService();
+                    await apiService.DeleteAsync($"/rest/v1/posts?id=eq.{txtId.Text}");
+
                     DataRow currRow = db.ResultTable.Rows.Find(SelectedPostId);
                     if (currRow != null)
                     {
                         currRow.Delete();
-                        
+
                         db.DBAdapter.Update(db.DS, "posts");
                         db.DS.AcceptChanges();
 
                         UpdateCommunityStats();
-                        LoadPostData(); // DB Reload and Refresh ListView
+                        LoadPostData();
                         ClearDetailForm();
                         MessageBox.Show("게시글이 삭제되었습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
-            catch (DataException DE)
+            catch (Exception ex)
             {
-                MessageBox.Show(DE.Message);
+                MessageBox.Show($"삭제 실패: {ex.Message}");
             }
-            catch (Exception DE)
+        }
+
+        /// <summary>
+        /// API 조회 (새로고침) 버튼 클릭
+        /// </summary>
+        private async void btnLoadApi_Click(object sender, EventArgs e)
+        {
+            try
             {
-                MessageBox.Show(DE.Message);
+                string endpoint = "/rest/v1/posts?select=*";
+
+                ApiService apiService = new ApiService();
+                var posts = await apiService.GetAllAsync<PostApiModel>(endpoint);
+
+                if (posts != null && posts.Count > 0)
+                {
+                    LoadPostDataFromApi(posts);
+                    MessageBox.Show($"총 {posts.Count}개의 데이터를 불러왔습니다.", "완료", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("불러올 데이터가 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"조회 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 로컬 백업 버튼 클릭
+        /// </summary>
+        private async void btnBackup_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string endpoint = "/rest/v1/posts?select=*";
+
+                ApiService apiService = new ApiService();
+                var posts = await apiService.GetAllAsync<PostApiModel>(endpoint);
+
+                if (posts != null && posts.Count > 0)
+                {
+                    PostRepository repository = new PostRepository();
+                    repository.SavePosts(posts);
+
+                    MessageBox.Show($"총 {posts.Count}개의 데이터가 로컬 DB에 백업되었습니다.", "백업 완료", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("백업할 데이터가 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"백업 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadPostDataFromApi(List<PostApiModel> posts)
+        {
+            communityListView.Items.Clear(); // Changed from postListView to communityListView
+            foreach (var post in posts)
+            {
+                ListViewItem item = new ListViewItem(post.Id.ToString());
+                item.SubItems.Add(post.Title);
+                item.SubItems.Add(post.AuthorId); // Author Name might need join, but using ID for now
+                item.SubItems.Add(post.PostType);
+                item.SubItems.Add(post.CreatedAt.ToString("yyyy-MM-dd"));
+                item.SubItems.Add(post.ViewsCount.ToString());
+                item.SubItems.Add(post.CommentsCount.ToString());
+                communityListView.Items.Add(item); // Changed from postListView to communityListView
+            }
+
+            lblTotalPosts.Text = posts.Count.ToString();
         }
 
         /// <summary>

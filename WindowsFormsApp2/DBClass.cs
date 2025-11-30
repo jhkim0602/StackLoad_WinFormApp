@@ -52,7 +52,7 @@ namespace WindowsFormsApp2
             try
             {
                 string connectionString = "User Id=stackload; Password = 1111; Data Source = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = xe))); ";
-                
+
                 DBAdapter = new OracleDataAdapter(commandString, connectionString);
                 MyCommandBuilder = new OracleCommandBuilder(DBAdapter);
                 DS = new DataSet();
@@ -67,6 +67,27 @@ namespace WindowsFormsApp2
         public void DB_ObjCreate()
         {
             ResultTable = new DataTable();
+        }
+
+        public void ExecuteNonQuery(string query)
+        {
+            try
+            {
+                string connectionString = "User Id=stackload; Password = 1111; Data Source = (DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = localhost)(PORT = 1521)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = xe))); ";
+                using (OracleConnection conn = new OracleConnection(connectionString))
+                {
+                    conn.Open();
+                    using (OracleCommand cmd = new OracleCommand(query, conn))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Database Error: " + ex.Message);
+                throw;
+            }
         }
     }
 }

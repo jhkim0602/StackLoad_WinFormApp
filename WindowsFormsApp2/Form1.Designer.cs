@@ -36,6 +36,7 @@
             this.menuStatsDaily = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStatsMonthly = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStatsYearly = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuStatsOverview = new System.Windows.Forms.ToolStripMenuItem();
             this.menuExit = new System.Windows.Forms.ToolStripMenuItem();
             this.menuExitApp = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
@@ -81,7 +82,8 @@
             this.menuStats.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuStatsDaily,
             this.menuStatsMonthly,
-            this.menuStatsYearly});
+            this.menuStatsYearly,
+            this.menuStatsOverview});
             this.menuStats.Name = "menuStats";
             this.menuStats.Size = new System.Drawing.Size(62, 20);
             this.menuStats.Text = "통계(&S)";
@@ -106,6 +108,13 @@
             this.menuStatsYearly.Size = new System.Drawing.Size(138, 22);
             this.menuStatsYearly.Text = "연도별 통계";
             this.menuStatsYearly.Click += new System.EventHandler(this.menuStatsYearly_Click);
+            //
+            // menuStatsOverview
+            //
+            this.menuStatsOverview.Name = "menuStatsOverview";
+            this.menuStatsOverview.Size = new System.Drawing.Size(138, 22);
+            this.menuStatsOverview.Text = "종합 통계";
+            this.menuStatsOverview.Click += new System.EventHandler(this.menuStatsOverview_Click);
             //
             // menuExit
             //
@@ -148,6 +157,7 @@
         private System.Windows.Forms.ToolStripMenuItem menuStatsDaily;
         private System.Windows.Forms.ToolStripMenuItem menuStatsMonthly;
         private System.Windows.Forms.ToolStripMenuItem menuStatsYearly;
+        private System.Windows.Forms.ToolStripMenuItem menuStatsOverview;
         private System.Windows.Forms.ToolStripMenuItem menuExit;
         private System.Windows.Forms.ToolStripMenuItem menuExitApp;
     }

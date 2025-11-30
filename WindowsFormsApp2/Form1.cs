@@ -122,5 +122,11 @@ namespace WindowsFormsApp2
         {
             MessageBox.Show("연도별 통계 기능은 준비 중입니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
+        private void menuStatsOverview_Click(object sender, EventArgs e)
+        {
+            StatisticsForm form = new StatisticsForm();
+            form.ShowDialog();
+        }
     }
 }

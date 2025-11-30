@@ -7,6 +7,9 @@ using WindowsFormsApp2.Models;
 using Oracle.DataAccess.Client;
 using System.Configuration;
 
+using WindowsFormsApp2.Services;
+using WindowsFormsApp2.Repositories;
+
 namespace WindowsFormsApp2.Forms
 {
     /// <summary>
@@ -70,7 +73,7 @@ namespace WindowsFormsApp2.Forms
                 // For now, keeping the original logic that uses db.DBAdapter and db.DS.
                 db.DBAdapter.Fill(db.DS, "users");
                 db.ResultTable = db.DS.Tables["users"];
-                
+
                 RefreshListView();
             }
             catch (DataException DE)
@@ -112,7 +115,7 @@ namespace WindowsFormsApp2.Forms
             if (db.ResultTable == null) return;
 
             lblTotalUsers.Text = db.ResultTable.Rows.Count.ToString();
-            
+
             int adminCount = db.ResultTable.Select("user_level = '관리자'").Length;
             lblAdminCount.Text = adminCount.ToString();
 
@@ -121,7 +124,7 @@ namespace WindowsFormsApp2.Forms
 
             int normalCount = db.ResultTable.Select("user_level = '일반'").Length;
             lblNormalCount.Text = normalCount.ToString();
-            
+
             lblUserListCount.Text = $"유저 목록          총 {db.ResultTable.Rows.Count}건";
         }
 
@@ -136,20 +139,20 @@ namespace WindowsFormsApp2.Forms
             if (userListView.SelectedItems.Count > 0)
             {
                 ListViewItem item = userListView.SelectedItems[0];
-                try 
+                try
                 {
                     txtId.Text = item.SubItems[0].Text;
                     txtName.Text = item.SubItems[1].Text;
                     txtEmail.Text = item.SubItems[2].Text;
-                    
+
                     string role = item.SubItems[3].Text;
                     if (cmbRole.Items.Contains(role))
                         cmbRole.SelectedItem = role;
                     else
                         cmbRole.Text = role;
-                        
+
                     // db.SelectedKeyValue = Convert.ToInt32(item.SubItems[0].Text); // Use DBClass property if int, but ID is string in DB? Wait, ID is VARCHAR2.
-                    // The user's DBClass has int SelectedKeyValue. 
+                    // The user's DBClass has int SelectedKeyValue.
                     // But our ID is string. We might need to handle this.
                     // For now, let's assume we can parse it if it's numeric, or we might need to change DBClass.
                     // Actually, the user's DBClass has `private int selectedKeyValue`.
@@ -158,7 +161,7 @@ namespace WindowsFormsApp2.Forms
                     // However, the user asked to use DBClass.
                     // I will use a local variable `SelectedUserId` (string) for now, as I can't put "u1" into an int.
                     // I will comment out the usage of db.SelectedKeyValue for ID if it's not compatible.
-                    SelectedUserId = item.SubItems[0].Text; 
+                    SelectedUserId = item.SubItems[0].Text;
                 }
                 catch (Exception)
                 {
@@ -197,9 +200,9 @@ namespace WindowsFormsApp2.Forms
         }
 
         /// <summary>
-        /// 수정 버튼 클릭
+        /// 수정 버튼 클릭 (API 연동)
         /// </summary>
-        private void btnUpdate_Click(object sender, EventArgs e)
+        private async void btnUpdate_Click(object sender, EventArgs e)
         {
             try
             {
@@ -209,48 +212,48 @@ namespace WindowsFormsApp2.Forms
                     return;
                 }
 
+                // API 호출
+                var model = new UserApiModel
+                {
+                    IdString = txtId.Text,
+                    Name = txtName.Text,
+                    Email = txtEmail.Text,
+                    Role = cmbRole.SelectedItem?.ToString() ?? "",
+                    CreatedAt = DateTime.Now,
+                    PostsCount = 0
+                };
+
+                ApiService apiService = new ApiService();
+                // ID가 문자열이므로 URL에 그대로 사용
+                await apiService.UpdateAsync($"/rest/v1/users?id=eq.{model.IdString}", model);
+
                 DataRow currRow = db.ResultTable.Rows.Find(SelectedUserId);
                 if (currRow != null)
                 {
                     currRow.BeginEdit();
-                    // ID는 PK라 수정 불가로 가정하거나, 수정 시 복잡함. 여기선 ID 수정 안함.
                     currRow["name"] = txtName.Text;
                     currRow["email"] = txtEmail.Text;
                     currRow["user_level"] = cmbRole.SelectedItem != null ? cmbRole.SelectedItem.ToString() : currRow["user_level"];
                     currRow.EndEdit();
 
-                    // DB 업데이트
                     db.DBAdapter.Update(db.DS, "users");
-                    db.DS.AcceptChanges(); // 커밋된 상태로 변경
-                    
+                    db.DS.AcceptChanges();
+
                     UpdateUserStats();
-                    LoadUserData(); // DB Reload and Refresh ListView
+                    LoadUserData();
                     MessageBox.Show("유저 정보가 수정되었습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
-            catch (DataException DE)
+            catch (Exception ex)
             {
-                MessageBox.Show(DE.Message);
-            }
-            catch (Exception DE)
-            {
-                MessageBox.Show(DE.Message);
+                MessageBox.Show($"수정 실패: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// 추가 버튼 클릭 (UI에 버튼이 있다면 연결, 없다면 로직만 존재)
-        /// 현재 폼 디자인에는 추가 버튼이 명시적으로 보이지 않으나(코드상), 
-        /// 만약 있다면 아래와 같이 구현.
+        /// 삭제 버튼 클릭 (API 연동)
         /// </summary>
-        // private void btnAdd_Click(...) { ... } 
-        // 기존 코드에 btnAdd가 없었으므로 생략하거나 필요시 추가. 
-        // *참고: 기존 코드에 btnAdd_Click이 없었음.
-
-        /// <summary>
-        /// 삭제 버튼 클릭
-        /// </summary>
-        private void btnDelete_Click(object sender, EventArgs e)
+        private async void btnDelete_Click(object sender, EventArgs e)
         {
             try
             {
@@ -263,29 +266,104 @@ namespace WindowsFormsApp2.Forms
                 DialogResult result = MessageBox.Show("선택한 유저를 삭제하시겠습니까?", "확인", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                 if (result == DialogResult.Yes)
                 {
+                    // API 호출
+                    ApiService apiService = new ApiService();
+                    await apiService.DeleteAsync($"/rest/v1/users?id=eq.{txtId.Text}");
+
                     DataRow currRow = db.ResultTable.Rows.Find(SelectedUserId);
                     if (currRow != null)
                     {
                         currRow.Delete();
-                        
+
                         db.DBAdapter.Update(db.DS, "users");
                         db.DS.AcceptChanges();
 
                         UpdateUserStats();
-                        LoadUserData(); // DB Reload and Refresh ListView
+                        LoadUserData();
                         ClearDetailForm();
                         MessageBox.Show("유저가 삭제되었습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
                 }
             }
-            catch (DataException DE)
+            catch (Exception ex)
             {
-                MessageBox.Show(DE.Message);
+                MessageBox.Show($"삭제 실패: {ex.Message}");
             }
-            catch (Exception DE)
+        }
+
+        /// <summary>
+        /// API 조회 (새로고침) 버튼 클릭
+        /// </summary>
+        private async void btnLoadApi_Click(object sender, EventArgs e)
+        {
+            try
             {
-                MessageBox.Show(DE.Message);
+                string endpoint = "/rest/v1/users?select=*";
+
+                ApiService apiService = new ApiService();
+                var users = await apiService.GetAllAsync<UserApiModel>(endpoint);
+
+                if (users != null && users.Count > 0)
+                {
+                    LoadUserDataFromApi(users);
+                    MessageBox.Show($"총 {users.Count}개의 데이터를 불러왔습니다.", "완료", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("불러올 데이터가 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"조회 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 로컬 백업 버튼 클릭
+        /// </summary>
+        private async void btnBackup_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string endpoint = "/rest/v1/users?select=*";
+
+                ApiService apiService = new ApiService();
+                var users = await apiService.GetAllAsync<UserApiModel>(endpoint);
+
+                if (users != null && users.Count > 0)
+                {
+                    UserRepository repository = new UserRepository();
+                    repository.SaveUsers(users);
+
+                    MessageBox.Show($"총 {users.Count}개의 데이터가 로컬 DB에 백업되었습니다.", "백업 완료", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("백업할 데이터가 없습니다.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"백업 실패: {ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void LoadUserDataFromApi(List<UserApiModel> users)
+        {
+            userListView.Items.Clear();
+            foreach (var user in users)
+            {
+                ListViewItem item = new ListViewItem(user.IdString);
+                item.SubItems.Add(user.Name);
+                item.SubItems.Add(user.Email);
+                item.SubItems.Add(user.Role);
+                item.SubItems.Add(user.CreatedAt.ToString("yyyy-MM-dd"));
+                item.SubItems.Add(user.PostsCount.ToString());
+                userListView.Items.Add(item);
+            }
+
+            lblTotalUsers.Text = users.Count.ToString();
         }
 
         /// <summary>

@@ -21,6 +21,8 @@ namespace WindowsFormsApp2.Forms
             this.grpSearch = new System.Windows.Forms.GroupBox();
             this.btnSearch = new System.Windows.Forms.Button();
             this.btnReset = new System.Windows.Forms.Button();
+            this.btnLoadApi = new System.Windows.Forms.Button();
+            this.btnBackup = new System.Windows.Forms.Button();
             this.cmbSearchCategory = new System.Windows.Forms.ComboBox();
             this.lblSearchCategory = new System.Windows.Forms.Label();
             this.txtSearchName = new System.Windows.Forms.TextBox();
@@ -88,6 +90,8 @@ namespace WindowsFormsApp2.Forms
             //
             this.grpSearch.Controls.Add(this.btnSearch);
             this.grpSearch.Controls.Add(this.btnReset);
+            this.grpSearch.Controls.Add(this.btnLoadApi);
+            this.grpSearch.Controls.Add(this.btnBackup);
             this.grpSearch.Controls.Add(this.cmbSearchCategory);
             this.grpSearch.Controls.Add(this.lblSearchCategory);
             this.grpSearch.Controls.Add(this.txtSearchName);
@@ -162,6 +166,26 @@ namespace WindowsFormsApp2.Forms
             this.btnReset.Text = "초기화";
             this.btnReset.UseVisualStyleBackColor = true;
             this.btnReset.Click += new System.EventHandler(this.btnReset_Click);
+            //
+            // btnLoadApi
+            //
+            this.btnLoadApi.Location = new System.Drawing.Point(12, 140);
+            this.btnLoadApi.Name = "btnLoadApi";
+            this.btnLoadApi.Size = new System.Drawing.Size(135, 40);
+            this.btnLoadApi.TabIndex = 6;
+            this.btnLoadApi.Text = "API 조회 (새로고침)";
+            this.btnLoadApi.UseVisualStyleBackColor = true;
+            this.btnLoadApi.Click += new System.EventHandler(this.btnLoadApi_Click);
+            //
+            // btnBackup
+            //
+            this.btnBackup.Location = new System.Drawing.Point(153, 140);
+            this.btnBackup.Name = "btnBackup";
+            this.btnBackup.Size = new System.Drawing.Size(135, 40);
+            this.btnBackup.TabIndex = 7;
+            this.btnBackup.Text = "로컬 백업";
+            this.btnBackup.UseVisualStyleBackColor = true;
+            this.btnBackup.Click += new System.EventHandler(this.btnBackup_Click);
             //
             // grpTechStats
             //
@@ -308,9 +332,9 @@ namespace WindowsFormsApp2.Forms
             this.lblTechListCount.Size = new System.Drawing.Size(100, 12);
             this.lblTechListCount.TabIndex = 1;
             this.lblTechListCount.Text = "기술 목록";
-            // 
+            //
             // techListView
-            // 
+            //
             this.techListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderTechId,
             this.columnHeaderTechName,
@@ -330,34 +354,34 @@ namespace WindowsFormsApp2.Forms
             this.techListView.UseCompatibleStateImageBehavior = false;
             this.techListView.View = System.Windows.Forms.View.Details;
             this.techListView.SelectedIndexChanged += new System.EventHandler(this.techListView_SelectedIndexChanged);
-            // 
+            //
             // columnHeaderTechId
-            // 
+            //
             this.columnHeaderTechId.Text = "ID";
             this.columnHeaderTechId.Width = 60;
-            // 
+            //
             // columnHeaderTechName
-            // 
+            //
             this.columnHeaderTechName.Text = "기술명";
             this.columnHeaderTechName.Width = 150;
-            // 
+            //
             // columnHeaderTechCategory
-            // 
+            //
             this.columnHeaderTechCategory.Text = "카테고리";
             this.columnHeaderTechCategory.Width = 120;
-            // 
+            //
             // columnHeaderTechDescription
-            // 
+            //
             this.columnHeaderTechDescription.Text = "설명";
             this.columnHeaderTechDescription.Width = 200;
-            // 
+            //
             // columnHeaderTechUserCount
-            // 
+            //
             this.columnHeaderTechUserCount.Text = "사용자 수";
             this.columnHeaderTechUserCount.Width = 100;
-            // 
+            //
             // columnHeaderTechVersion
-            // 
+            //
             this.columnHeaderTechVersion.Text = "버전";
             this.columnHeaderTechVersion.Width = 100;
             //
@@ -547,6 +571,8 @@ namespace WindowsFormsApp2.Forms
         private System.Windows.Forms.ComboBox cmbSearchCategory;
         private System.Windows.Forms.Button btnSearch;
         private System.Windows.Forms.Button btnReset;
+        private System.Windows.Forms.Button btnLoadApi;
+        private System.Windows.Forms.Button btnBackup;
         private System.Windows.Forms.GroupBox grpTechStats;
         private System.Windows.Forms.Label lblTotalTechsLabel;
         private System.Windows.Forms.Label lblTotalTechs;
